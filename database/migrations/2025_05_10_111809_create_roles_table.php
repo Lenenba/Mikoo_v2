@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name')
                 ->unique()
-                ->default('Guest')
                 ->comment('Role name, e.g., SuperAdmin, Admin, Guest, Babysitter, Parent');
 
             $table->timestamps();
@@ -33,7 +32,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
         Schema::dropIfExists('role_user');
+        Schema::dropIfExists('roles');
     }
 };

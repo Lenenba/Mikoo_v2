@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\ParentProfile;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ParentProfileSeeder extends Seeder
 {
@@ -12,6 +13,8 @@ class ParentProfileSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        ParentProfile::factory()
+            ->count(10)
+            ->create();
     }
 }

@@ -36,4 +36,14 @@ class Media extends Model
     {
         return $this->morphTo();
     }
+
+    /**
+     * Get the URL of the photo.
+     *
+     * @return string
+     */
+    public function scopeIsProfilePicture($query)
+    {
+        return $query->where('is_profile_picture', true);
+    }
 }

@@ -1,9 +1,12 @@
 <?php
 
-use App\Http\Controllers\Settings\PasswordController;
-use App\Http\Controllers\Settings\ProfileController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DeleteProfilePhotoController;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MediaController;
+use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\SetAsProfilePhotoController;
 
 Route::middleware('auth')->group(function () {
     Route::redirect('settings', 'settings/profile');
@@ -14,6 +17,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
+
+    Route::get('settings/media', [MediaController::class, 'index'])->name('media.list');
+
+    Route::post('settings/media/setAsProfile', SetAsProfilePhotoController::class)
+        ->name('settings.media.setAsProfile');
+    Route::delete('settings/media/{mediaId}', DeleteProfilePhotoController::class)
+        ->name('settings.media.deleteProfile');
 
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/appearance');

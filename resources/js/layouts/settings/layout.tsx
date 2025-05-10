@@ -13,6 +13,16 @@ const sidebarNavItems: NavItem[] = [
         icon: null,
     },
     {
+        title: 'Details information',
+        href: '/settings/profile',
+        icon: null,
+    },
+    {
+        title: 'Media',
+        href: 'media',
+        icon: null,
+    },
+    {
         title: 'Password',
         href: '/settings/password',
         icon: null,
@@ -22,6 +32,7 @@ const sidebarNavItems: NavItem[] = [
         href: '/settings/appearance',
         icon: null,
     },
+
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
@@ -59,8 +70,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
                 <Separator className="my-6 md:hidden" />
 
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
+                <div className="flex-1 md:max-w-5xl">
+                    <section className="max-w-4xl space-y-12">{children}</section>
                 </div>
             </div>
         </div>

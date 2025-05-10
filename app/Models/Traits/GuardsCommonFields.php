@@ -4,10 +4,16 @@ namespace App\Models\Traits;
 
 trait GuardsCommonFields
 {
-    protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
+    /**
+     * Common attributes to guard.
+     */
+    public static function commonGuarded(): array
+    {
+        return [
+            'id',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+        ];
+    }
 }

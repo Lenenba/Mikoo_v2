@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('media', function (Blueprint $table) {
+            $table->id();
             // Polymorphic relation fields
             $table->unsignedBigInteger('mediaable_id');
             $table->string('mediaable_type');
 
             // Allows grouping (avatar, garde, ...)
             $table->string('collection_name');
-
+            $table->boolean('is_profile_picture')->default(false);
             // File info
             $table->string('file_name');
             $table->string('file_path');

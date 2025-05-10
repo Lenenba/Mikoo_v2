@@ -42,7 +42,6 @@ return new class extends Migration
             // 5) Indexes pour filtrages fréquents
             $table->index('price_per_hour');
             $table->index('payment_frequency');
-            $table->timestamps();
         });
     }
 

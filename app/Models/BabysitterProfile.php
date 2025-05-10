@@ -35,4 +35,14 @@ class BabysitterProfile extends Model
     {
         return $this->morphOne(Address::class, 'addressable');
     }
+
+    /**
+     * One-to-one relation to user.
+     *
+     * @return BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

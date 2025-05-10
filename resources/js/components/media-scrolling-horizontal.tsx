@@ -71,7 +71,7 @@ export default function MediaScrollingHorizontal({
                             />
                         </div>
                         <figcaption className="pt-2 text-xs text-muted-foreground">
-                            Photo de{" "}
+                            Collection :{" "}
                             <span className="font-semibold text-foreground">
                                 {media.is_profile
                                     ? 'Profile'

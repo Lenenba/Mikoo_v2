@@ -1,11 +1,14 @@
 import * as React from 'react';
 import { useState, useRef, FormEvent } from 'react';
+import { router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { X } from 'lucide-react';
 
 const MAX_PHOTOS = 5;
+const MIN_WIDTH = 800;
+const MIN_HEIGHT = 600;
 
 interface Preview {
     file: File;
@@ -16,33 +19,51 @@ export default function MediaUploadForm() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [mediaPreviews, setMediaPreviews] = useState<Preview[]>([]);
     const [imageErrors, setImageErrors] = useState<string[]>([]);
+    const [collectionName, setCollectionName] = useState<string>('');
 
-    const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Validate image dimensions
+    const validateImageDimensions = (file: File): Promise<boolean> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const isValid = img.naturalWidth >= MIN_WIDTH && img.naturalHeight >= MIN_HEIGHT;
+                URL.revokeObjectURL(img.src);
+                resolve(isValid);
+            };
+            img.onerror = () => resolve(false);
+            img.src = URL.createObjectURL(file);
+        });
+    };
+
+    const onFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files) return;
 
         const errors: string[] = [];
         const newPreviews: Preview[] = [];
 
-        Array.from(files).forEach((file) => {
+        for (const file of Array.from(files)) {
             if (mediaPreviews.length + newPreviews.length >= MAX_PHOTOS) {
                 errors.push(`You can only upload up to ${MAX_PHOTOS} photos.`);
-                return;
+                break;
             }
             if (!file.type.startsWith('image/')) {
                 errors.push(`File ${file.name} is not an image.`);
-                return;
+                continue;
+            }
+            const validSize = await validateImageDimensions(file);
+            if (!validSize) {
+                errors.push(`Image ${file.name} dimensions must be at least ${MIN_WIDTH}x${MIN_HEIGHT}px.`);
+                continue;
             }
             const url = URL.createObjectURL(file);
             newPreviews.push({ file, preview: url });
-        });
+        }
 
         setImageErrors(errors);
         if (newPreviews.length) {
             setMediaPreviews((prev) => [...prev, ...newPreviews]);
         }
-
-        // reset input value to allow same file re-selection
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -61,34 +82,50 @@ export default function MediaUploadForm() {
         mediaPreviews.forEach((p) => URL.revokeObjectURL(p.preview));
         setMediaPreviews([]);
         setImageErrors([]);
+        setCollectionName('');
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const upload = (e: FormEvent) => {
         e.preventDefault();
-        if (!mediaPreviews.length) return;
-        // TODO: send FormData(mediaPreviews) to server
-        console.log('Uploading', mediaPreviews);
+        const formData = new FormData();
+        formData.append('collection_name', collectionName);
+        mediaPreviews.forEach((p) => formData.append('images[]', p.file));
+
+        router.post('/settings/media', formData, {
+            preserveScroll: true,
+            onSuccess: () => resetAll(),
+            onError: (errors: Record<string, string>) => {
+                const msgs = Object.values(errors);
+                setImageErrors(msgs);
+            },
+        });
     };
 
-    const canUpload = mediaPreviews.length > 0;
+    const canUpload = mediaPreviews.length > 0 && collectionName.trim() !== '';
 
     return (
-        <form onSubmit={upload} className="space-y-4">
+        <form onSubmit={upload} encType="multipart/form-data" className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-200">
                 Upload Media
             </h2>
             <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="collection_name">Collection name </Label>
-                <Input type="collection_name" id="collection_name" placeholder="collection_name" />
+                <Label htmlFor="collection_name">Collection name</Label>
+                <Input
+                    id="collection_name"
+                    name="collection_name"
+                    type="text"
+                    value={collectionName}
+                    onChange={(e) => setCollectionName(e.target.value)}
+                    placeholder="Enter collection name"
+                />
             </div>
-            {/* Photo upload + previews */}
+
             <div>
                 <Label className="block mb-2 text-sm font-medium text-gray-800 dark:text-neutral-200">
                     Add photos (max {MAX_PHOTOS})
                 </Label>
                 <div className="flex flex-wrap gap-2">
-                    {/* Add button */}
                     <label
                         htmlFor="media"
                         className="flex shrink-0 justify-center items-center w-32 h-32 border-2 border-dotted border-gray-300 rounded-xl text-gray-400 cursor-pointer hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-600 dark:hover:bg-neutral-700/20"
@@ -115,7 +152,6 @@ export default function MediaUploadForm() {
                         </svg>
                     </label>
 
-                    {/* Previews */}
                     {mediaPreviews.map((mp, idx) => (
                         <div
                             key={mp.preview}
@@ -159,8 +195,8 @@ export default function MediaUploadForm() {
                 </Button>
                 <Button
                     type="button"
-                    className="ml-4"
                     variant="outline"
+                    className="ml-4"
                     onClick={resetAll}
                 >
                     Reset

@@ -1,31 +1,45 @@
 <?php
 
-use App\Http\Controllers\DeleteProfilePhotoController;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MediaController;
+use Inertia\Inertia;
+
+// Settings controllers
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\PasswordController;
-use App\Http\Controllers\SetAsProfilePhotoController;
+use App\Http\Controllers\Settings\MediaController;
+use App\Http\Controllers\Settings\BabysitterProfileController;
+use App\Http\Controllers\Settings\SetAsProfilePhotoController;
+use App\Http\Controllers\Settings\DeleteProfilePhotoController;
 
-Route::middleware('auth')->group(function () {
-    Route::redirect('settings', 'settings/profile');
+Route::middleware('auth')
+    ->prefix('settings')
+    ->name('settings.')
+    ->group(function () {
+        // Redirect /settings → /settings/profile
+        Route::redirect('/', 'settings/profile');
 
-    Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        // Profile CRUD
+        Route::get('profile',   [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
-    Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
+        // Password update
+        Route::get('password', [PasswordController::class, 'edit'])->name('password.edit');
+        Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::get('settings/media', [MediaController::class, 'index'])->name('media.list');
+        // Media management
+        Route::get('media',                    [MediaController::class, 'index'])->name('media.list');
+        Route::post('media',                   [MediaController::class, 'store'])->name('media.store');
+        Route::post('media/{media}/set-profile', SetAsProfilePhotoController::class)->name('media.setProfile');
+        Route::delete('media/{media}',         DeleteProfilePhotoController::class)->name('media.delete');
 
-    Route::post('settings/media/setAsProfile', SetAsProfilePhotoController::class)
-        ->name('settings.media.setAsProfile');
-    Route::delete('settings/media/{mediaId}', DeleteProfilePhotoController::class)
-        ->name('settings.media.deleteProfile');
+        // Babysitter profile details
+        Route::get('babysitter/profile/details', [BabysitterProfileController::class, 'edit'])
+            ->name('babysitter.profile.details');
+        Route::patch('babysitter/profile/details', [BabysitterProfileController::class, 'update'])
+            ->name('babysitter.profile.update');
 
-    Route::get('settings/appearance', function () {
-        return Inertia::render('settings/appearance');
-    })->name('appearance');
-});
+        // Appearance settings
+        Route::get('appearance', fn() => Inertia::render('settings/appearance'))
+            ->name('appearance');
+    });

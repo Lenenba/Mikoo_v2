@@ -71,6 +71,16 @@ class User extends Authenticatable
     }
 
     /**
+     * The user's profile (one-to-one relation).
+     *
+     * @return BelongsTo
+     */
+    public function babysitterProfile(): BelongsTo
+    {
+        return $this->belongsTo(BabysitterProfile::class, 'id', 'user_id');
+    }
+
+    /**
      * The user's avatar (single media item in the 'avatar' collection).
      *
      * @return MorphOne
